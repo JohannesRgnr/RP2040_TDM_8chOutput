@@ -25,15 +25,18 @@ static __attribute__((aligned(8))) pio_tdm tdm;
 
 
 oscillator_t sine_osc;
-uint16_t value;
+float sample;
+int32_t value;
 
 static void process_audio(int32_t* output, size_t samples) {
     for (size_t i = 0; i < samples; i++) {
 
-        float sample;
+        
         sample = osc_Sine(&sine_osc);
+        // sample = -1.0f; // testing
         /*************** Convert to 16 bits int *****************/
-	    value = (uint16_t) ((int16_t) ((32767.0f) * sample));
+	    //value = (uint32_t) ((int32_t) ((8388607.0f) * sample));
+        value = ((int32_t) (8388607.0f * sample)) << 8; // 24-bit data, left-aligned: sample value is converted from float to integer by multiplying by the maximum 24 bit value of 8388607.0, then shift by 8 bits to get a 32-bits data slot value
 
         output[i<<3]     = value;
         output[(i<<3)+1] = value;
@@ -77,14 +80,16 @@ int main() {
 
     printf("System Clock: %lu\n", clock_get_hz(clk_sys));
 
-    osc_init(&sine_osc, 0.5, 220);
+    osc_init(&sine_osc, 1.0f, 220);
 
     tdm_program_start_synched(pio0, &tdm_config_default, dma_tdm_in_handler, &tdm);
 
     puts("TDM_doubleBuffer_out started");
     
     while (true) {
-        // printf("value %d", value);
+        //printf("sample %f\n", sample);
+        //printf("value %u\n", value);
+        //sleep_ms(10);
     }
 
     return 0;
