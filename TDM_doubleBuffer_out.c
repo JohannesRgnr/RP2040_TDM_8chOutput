@@ -34,10 +34,10 @@ static void process_audio(int32_t* output, size_t samples) {
         
         sample = osc_Sine(&sine_osc);
         // sample = -1.0f; // testing
-        /*************** Convert to 16 bits int *****************/
-	    //value = (uint32_t) ((int32_t) ((8388607.0f) * sample));
-        value = ((int32_t) (8388607.0f * sample)) << 8; // 24-bit data, left-aligned: sample value is converted from float to integer by multiplying by the maximum 24 bit value of 8388607.0, then shift by 8 bits to get a 32-bits data slot value
+        /*************** Convert to 24 bits int, left aligned *****************/
+	    value = ((int32_t) (8388607.0f * sample)) << 8; // sample value is converted from float to integer by multiplying by the maximum 24 bit value (8388607.0), then shifted by 8 bits to get a 32-bits slot value
 
+        // output to 8 channels
         output[i<<3]     = value;
         output[(i<<3)+1] = value;
         output[(i<<3)+2] = value;
@@ -47,6 +47,7 @@ static void process_audio(int32_t* output, size_t samples) {
         output[(i<<3)+6] = value;
         output[(i<<3)+7] = value;
 
+        // values for testing
         // output[i<<3]     = 11111100;
         // output[(i<<3)+1] = 22222200;
         // output[(i<<3)+2] = 33333300;
