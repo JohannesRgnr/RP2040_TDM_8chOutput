@@ -32,30 +32,30 @@ static void process_audio(int32_t* output, size_t samples) {
     for (size_t i = 0; i < samples; i++) {
 
         
-        sample = osc_Sine(&sine_osc);
+        sample = osc_Sine(&sine_osc); // generate one sinewave
         // sample = -1.0f; // testing
         /*************** Convert to 24 bits int, left aligned *****************/
 	    value = ((int32_t) (8388607.0f * sample)) << 8; // sample value is converted from float to integer by multiplying by the maximum 24 bit value (8388607.0), then shifted by 8 bits to get a 32-bits slot value
 
         // output to 8 channels
-        output[i<<3]     = value;
-        output[(i<<3)+1] = value;
-        output[(i<<3)+2] = value;
-        output[(i<<3)+3] = value;
-        output[(i<<3)+4] = value;
-        output[(i<<3)+5] = value;
-        output[(i<<3)+6] = value;
-        output[(i<<3)+7] = value;
+        // output[i<<3]     = value;
+        // output[(i<<3)+1] = value;
+        // output[(i<<3)+2] = value;
+        // output[(i<<3)+3] = value;
+        // output[(i<<3)+4] = value;
+        // output[(i<<3)+5] = value;
+        // output[(i<<3)+6] = value;
+        // output[(i<<3)+7] = value;
 
         // values for testing
-        // output[i<<3]     = 11111100;
-        // output[(i<<3)+1] = 22222200;
-        // output[(i<<3)+2] = 33333300;
-        // output[(i<<3)+3] = 44444400;
-        // output[(i<<3)+4] = 55555500;
-        // output[(i<<3)+5] = 66666600;
-        // output[(i<<3)+6] = 77777700;
-        // output[(i<<3)+7] = 88888800;
+        output[i<<3]     = -8388607 << 8;
+        output[(i<<3)+1] = 222222 << 8;
+        output[(i<<3)+2] = 333333 << 8;
+        output[(i<<3)+3] = 444444 << 8;
+        output[(i<<3)+4] = 555555 << 8;
+        output[(i<<3)+5] = 666666 << 8;
+        output[(i<<3)+6] = 777777 << 8;
+        output[(i<<3)+7] = 888888 << 8;
     }
 }
 

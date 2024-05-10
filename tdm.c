@@ -16,7 +16,9 @@
 #include "hardware/irq.h"
 #include "tdm.pio.h"
 
-const tdm_config tdm_config_default = {48000, 256, 32, 10, 6, 7, 8};
+
+// Config: FS = 48000, sck_mult = 256, bit_depth = 32, sck_pin = 10, dout_pin = 6, din_pin = 7, clock_pin base = 8)  --> BCLK on GPIO 8, FRCLK on GPIO 9
+const tdm_config tdm_config_default = {12000, 256, 32, 10, 6, 7, 8};
 
 static float pio_div(float freq, uint16_t* div, uint8_t* frac) {
     float clk   = (float)clock_get_hz(clk_sys);

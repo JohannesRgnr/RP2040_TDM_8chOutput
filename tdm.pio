@@ -21,19 +21,47 @@
 ;                                  /--- FRAMECLK
 ;                                  |/-- BCLK
 ;                                  ||
+; ********************  frame clock  @1 for half the frame duration *************
+; public entry_point: 
+; frameHigh:                  
+;     set x, 30               side 0b11
+;     out pins, 1             side 0b10
+;     set y, 3                side 0b11
+; dataHigh:                   
+;     out pins, 1             side 0b10
+;     jmp x-- dataHigh        side 0b11
+;     out pins, 1             side 0b10
+;     set x, 28               side 0b11
+;     out pins, 1             side 0b10
+;     jmp y-- dataHigh        side 0b11
+;     out pins, 1             side 0b10
+; frameLow:
+;     set x, 30               side 0b01
+;     out pins, 1             side 0b00
+;     set y, 3                side 0b01
+; dataLow:
+;     out pins, 1             side 0b00
+;     jmp x-- dataLow         side 0b01
+;     out pins, 1             side 0b00
+;     set x, 28               side 0b01
+;     out pins, 1             side 0b00
+;     jmp y-- dataLow         side 0b01
+;     out pins, 1             side 0b00    
+
+; ********************  frame clock only @1 for 2 bclk at end of frame *************
 public entry_point: 
 frameHigh:                  
     set x, 30               side 0b11
-    out pins, 1             side 0b10
-    set y, 3                side 0b11
+    out pins, 1             side 0b00
+    set y, 3                side 0b01
 dataHigh:                   
-    out pins, 1             side 0b10
-    jmp x-- dataHigh        side 0b11
-    out pins, 1             side 0b10
-    set x, 28               side 0b11
-    out pins, 1             side 0b10
-    jmp y-- dataHigh        side 0b11
-    out pins, 1             side 0b10
+    out pins, 1             side 0b00
+    jmp x-- dataHigh        side 0b01
+    out pins, 1             side 0b00
+    set x, 28               side 0b01
+    out pins, 1             side 0b00
+    jmp y-- dataHigh        side 0b01
+    out pins, 1             side 0b00
 frameLow:
     set x, 30               side 0b01
     out pins, 1             side 0b00
@@ -45,9 +73,7 @@ dataLow:
     set x, 28               side 0b01
     out pins, 1             side 0b00
     jmp y-- dataLow         side 0b01
-    out pins, 1             side 0b00    
-
-
+    out pins, 1             side 0b10   
 
 % c-sdk {
 
