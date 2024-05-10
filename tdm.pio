@@ -1,79 +1,56 @@
 
 ; tdm.pio
 ;
-; Author: Johannes Regnier, adapted from Daniel Collins
-; Date:   2024-05-05
+; Author: Nigel Orr, adapted from Johannes Regnier, adapted from Daniel Collins
 ;
 ; An tdm output peripheral with master clock (SCK) output.
 
-
-
 .program tdm_out_master
 ; tdm audio output block. Synchronous with clock and input.
-; Must run at BCK * CHANNELS.
+; Must run at BCK * CHANNELS * 2.
 ;
 ; This block also outputs the frame clock and the bit clock.
-; Uses 32 bits frames
+; Supports variable bits per sample, receiver should sample on rising edge of bit clock (bits are set on falling edge)
+; Defined parameters
+.define public BITS_PER_SAMPLE (32)
+.define public SAMPLES_PER_FRAME (8)
+.define public SAMPLES_FRAMECLK_HIGH (1)
 
+; Calculated parameters
+.define public SAMPLES_FRAMECLK_LOW (SAMPLES_PER_FRAME - SAMPLES_FRAMECLK_HIGH)
 
 .side_set 2 
              
-;                                  /--- FRAMECLK
-;                                  |/-- BCLK
-;                                  ||
-; ********************  frame clock  @1 for half the frame duration *************
-; public entry_point: 
-; frameHigh:                  
-;     set x, 30               side 0b11
-;     out pins, 1             side 0b10
-;     set y, 3                side 0b11
-; dataHigh:                   
-;     out pins, 1             side 0b10
-;     jmp x-- dataHigh        side 0b11
-;     out pins, 1             side 0b10
-;     set x, 28               side 0b11
-;     out pins, 1             side 0b10
-;     jmp y-- dataHigh        side 0b11
-;     out pins, 1             side 0b10
-; frameLow:
-;     set x, 30               side 0b01
-;     out pins, 1             side 0b00
-;     set y, 3                side 0b01
-; dataLow:
-;     out pins, 1             side 0b00
-;     jmp x-- dataLow         side 0b01
-;     out pins, 1             side 0b00
-;     set x, 28               side 0b01
-;     out pins, 1             side 0b00
-;     jmp y-- dataLow         side 0b01
-;     out pins, 1             side 0b00    
-
-; ********************  frame clock only @1 for 2 bclk at end of frame *************
+;                                              /--- FRAMECLK
+;                                              |/-- BCLK
+;                                              ||
 public entry_point: 
 frameHigh:                  
-    set x, 30               side 0b11
-    out pins, 1             side 0b00
-    set y, 3                side 0b01
+    set x, (BITS_PER_SAMPLE - 5)        side 0b11
+    out pins, 1                         side 0b10
+    set y, (SAMPLES_FRAMECLK_HIGH - 1)  side 0b11
 dataHigh:                   
-    out pins, 1             side 0b00
-    jmp x-- dataHigh        side 0b01
-    out pins, 1             side 0b00
-    set x, 28               side 0b01
-    out pins, 1             side 0b00
-    jmp y-- dataHigh        side 0b01
-    out pins, 1             side 0b00
+    out pins, 1                         side 0b10
+    jmp x-- dataHigh                    side 0b11
+    out pins, 1                         side 0b10
+    set x, (BITS_PER_SAMPLE - 3)        side 0b11 ; ready for next sample on frame high
+    out pins, 1                         side 0b10
+    jmp y-- dataHigh                    side 0b11
+    out pins, 1                         side 0b10
 frameLow:
-    set x, 30               side 0b01
-    out pins, 1             side 0b00
-    set y, 3                side 0b01
+    set x, (BITS_PER_SAMPLE - 5)        side 0b01
+    out pins, 1                         side 0b00
+    set y, (SAMPLES_FRAMECLK_LOW - 1)   side 0b01
 dataLow:
-    out pins, 1             side 0b00
-    jmp x-- dataLow         side 0b01
-    out pins, 1             side 0b00
-    set x, 28               side 0b01
-    out pins, 1             side 0b00
-    jmp y-- dataLow         side 0b01
-    out pins, 1             side 0b10   
+    out pins, 1                         side 0b00
+    jmp x-- dataLow                     side 0b01
+    out pins, 1                         side 0b00
+    set x, (BITS_PER_SAMPLE - 3)        side 0b01 ; ready for next sample on frame low
+    out pins, 1                         side 0b00
+    jmp y-- dataLow                     side 0b01
+    out pins, 1                         side 0b00    
+; implicit wrap to frameHigh
+
 
 % c-sdk {
 
@@ -81,7 +58,7 @@ dataLow:
 const int tdm_sck_program_pio_mult = 2;
 const int tdm_out_master_program_pio_mult = 2;
 
-
+// bit_depth must be the same as BITS_PER_SAMPLE defined in the PIO assembler
 
 static inline void tdm_out_master_program_init(PIO pio, uint8_t sm, uint8_t offset, uint8_t bit_depth, uint8_t dout_pin, uint8_t clock_pin_base) {
     pio_gpio_init(pio, dout_pin);
@@ -98,10 +75,6 @@ static inline void tdm_out_master_program_init(PIO pio, uint8_t sm, uint8_t offs
     uint32_t pin_mask = (1u << dout_pin) | (3u << clock_pin_base);
     pio_sm_set_pins_with_mask(pio, sm, 0, pin_mask);  // zero output
     pio_sm_set_pindirs_with_mask(pio, sm, pin_mask, pin_mask);
-    
-       
 }
-
-
 
 %}
