@@ -15,8 +15,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "tdm.h"
 
-#define FS                  24000     // selected samplerate
+
 
 #define TS		            (1.f/FS)        // sampling period
 

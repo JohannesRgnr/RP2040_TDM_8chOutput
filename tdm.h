@@ -15,6 +15,7 @@
 #ifndef TDM_H
 #define TDM_H
 
+#define FS 48000    // selected samplerate             
 #define CHANNELS 8
 #define AUDIO_BUFFER_SIZE 16 // in samples
 #define TDM_BUFFER_SIZE  AUDIO_BUFFER_SIZE * CHANNELS  // 16 * 8 words = 128 samples latency 
@@ -60,5 +61,7 @@ extern const tdm_config tdm_config_default;
 
 void tdm_program_start_slaved(PIO pio, const tdm_config* config, void (*dma_handler)(void), pio_tdm* tdm);
 void tdm_program_start_synched(PIO pio, const tdm_config* config, void (*dma_handler)(void), pio_tdm* tdm);
+
+int32_t float_to_24bits(float value);
 
 #endif  // TDM_H

@@ -24,38 +24,40 @@
 static __attribute__((aligned(8))) pio_tdm tdm;
 
 
-oscillator_t sine_osc;
-float sample;
-int32_t value;
+oscillator_t sine_osc1, sine_osc2, sine_osc3, sine_osc4;
+
+
 
 static void process_audio(int32_t* output, size_t samples) {
     for (size_t i = 0; i < samples; i++) {
 
+        float sample1, sample2, sample3, sample4;
+       
+        /*************** Generate sine waves *****************/
+        sample1 = osc_Sine(&sine_osc1);
+        sample2 = osc_Sine(&sine_osc2);
+        sample3 = osc_Sine(&sine_osc3);
+        sample4 = osc_Sine(&sine_osc4);
         
-        sample = osc_Sine(&sine_osc); // generate one sinewave
-        // sample = -1.0f; // testing
-        /*************** Convert to 24 bits int, left aligned *****************/
-	    value = ((int32_t) (8388607.0f * sample)) << 8; // sample value is converted from float to integer by multiplying by the maximum 24 bit value (8388607.0), then shifted by 8 bits to get a 32-bits slot value
-
-        // output to 8 channels
-        // output[i<<3]     = value;
-        // output[(i<<3)+1] = value;
-        // output[(i<<3)+2] = value;
-        // output[(i<<3)+3] = value;
-        // output[(i<<3)+4] = value;
-        // output[(i<<3)+5] = value;
-        // output[(i<<3)+6] = value;
-        // output[(i<<3)+7] = value;
+        /*************** Output to 8 channels *****************/
+        output[i<<3]     = float_to_24bits(sample1);
+        output[(i<<3)+1] = float_to_24bits(sample2);
+        output[(i<<3)+2] = float_to_24bits(sample3);
+        output[(i<<3)+3] = float_to_24bits(sample4);
+        output[(i<<3)+4] = float_to_24bits(sample1);
+        output[(i<<3)+5] = float_to_24bits(sample2);
+        output[(i<<3)+6] = float_to_24bits(sample3);
+        output[(i<<3)+7] = float_to_24bits(sample4);
 
         // values for testing
-        output[i<<3]     = -8388607 << 8;
-        output[(i<<3)+1] = 222222 << 8;
-        output[(i<<3)+2] = 333333 << 8;
-        output[(i<<3)+3] = 444444 << 8;
-        output[(i<<3)+4] = 555555 << 8;
-        output[(i<<3)+5] = 666666 << 8;
-        output[(i<<3)+6] = 777777 << 8;
-        output[(i<<3)+7] = 888888 << 8;
+        // output[i<<3]     = -8388607 << 8;
+        // output[(i<<3)+1] = 222222 << 8;
+        // output[(i<<3)+2] = 333333 << 8;
+        // output[(i<<3)+3] = 444444 << 8;
+        // output[(i<<3)+4] = 555555 << 8;
+        // output[(i<<3)+5] = 666666 << 8;
+        // output[(i<<3)+6] = 777777 << 8;
+        // output[(i<<3)+7] = 888888 << 8;
     }
 }
 
@@ -81,12 +83,14 @@ int main() {
 
     printf("System Clock: %lu\n", clock_get_hz(clk_sys));
 
-    osc_init(&sine_osc, 1.0f, 220);
+    // initialize oscillators
+    osc_init(&sine_osc1, 1.0f, 220);
+    osc_init(&sine_osc2, 0.5f, 440);
+    osc_init(&sine_osc3, 1.0f, 660);
+    osc_init(&sine_osc4, 0.5f, 880);
 
     tdm_program_start_synched(pio0, &tdm_config_default, dma_tdm_in_handler, &tdm);
 
-    puts("TDM_doubleBuffer_out started");
-    
     while (true) {
         //printf("sample %f\n", sample);
         //printf("value %u\n", value);

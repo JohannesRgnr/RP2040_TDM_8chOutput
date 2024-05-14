@@ -17,8 +17,9 @@
 #include "tdm.pio.h"
 
 
-// Config: FS = 48000, sck_mult = 256, bit_depth = 32, sck_pin = 10, dout_pin = 6, din_pin = 7, clock_pin base = 8)  --> BCLK on GPIO 8, FRCLK on GPIO 9
-const tdm_config tdm_config_default = {12000, 256, 32, 10, 6, 7, 8};
+// Config: FS = 48000, sck_mult = 256, bit_depth = 32, sck_pin = 10, dout_pin = 6, din_pin = 7, clock_pin base = 8)  
+// --> BCLK on GPIO 8, FRCLK on GPIO 9
+const tdm_config tdm_config_default = {FS, 256, tdm_out_master_BITS_PER_SAMPLE, 10, 6, 7, 8};
 
 static float pio_div(float freq, uint16_t* div, uint8_t* frac) {
     float clk   = (float)clock_get_hz(clk_sys);
@@ -141,4 +142,15 @@ void tdm_program_start_synched(PIO pio, const tdm_config* config, void (*dma_han
     tdm_sync_program_init(pio, config, tdm);
     dma_double_buffer_init(tdm, dma_handler);
     pio_enable_sm_mask_in_sync(tdm->pio, tdm->sm_mask);
+}
+
+/**
+ * @brief  Convert sample value (-1.0f to +1.0f) to 24 bits integer, left aligned in 32 bits data slot. 
+ * @details Sample value is converted from float to integer by multiplying by the maximum 24 bit value (8388607.0)
+ * then shifted by 8 bits to get a 32-bits slot value
+ * @param value 
+ * @return int32_t 
+ */
+int32_t float_to_24bits(float value){
+    return ((int32_t) (8388607.0f * value)) << 8;
 }
