@@ -1,6 +1,6 @@
 /**
  * @file TDM_doubleBuffer_out.c
- * @author Johannes Regnier
+ * @author Johannes Regnier, adapted from Daniel Collins
  * @brief 
  * @version 0.1
  * @date 2024-05-06
@@ -39,7 +39,7 @@ static void process_audio(int32_t* output, size_t samples) {
         sample3 = osc_Sine(&sine_osc3);
         sample4 = osc_Sine(&sine_osc4);
         
-        /*************** Output to 8 channels *****************/
+        /************** Output to 8 channels *****************/
         output[i<<3]     = float_to_24bits(sample1);
         output[(i<<3)+1] = float_to_24bits(sample2);
         output[(i<<3)+2] = float_to_24bits(sample3);

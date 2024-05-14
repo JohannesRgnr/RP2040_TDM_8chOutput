@@ -1,6 +1,6 @@
 /**
  * @file tdm.c
- * @author Johannes Regnier
+ * @author Johannes Regnier, adapted from Daniel Collins
  * @brief 
  * @version 0.1
  * @date 2024-05-06
